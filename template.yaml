@@ -34,4 +34,17 @@ Resources:
             Path: /home
             Method: get
 
-  
+  UnicornInventoryPageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: inventory.lambdaHandler
+      Runtime: nodejs14.x
+      Events:
+        UnicornService:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref UnicornService
+            Path: /inventory
+            Method: get
+
