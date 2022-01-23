@@ -19,7 +19,10 @@ exports.lambdaHandler = async (event, context) => {
         // const ret = await axios(url);
         response = {
             'statusCode': 200,
-            'body': 'Hello Unicorn Fans!'
+            'body': JSON.stringify({
+                message: 'hello world',
+                // location: ret.data.trim()
+            })
         }
     } catch (err) {
         console.log(err);

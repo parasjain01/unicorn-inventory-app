@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  unicorn-inventory-app
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  UnicornService:
+      Type: AWS::Serverless::HttpApi
+      Properties:
+        Description: Unicorn Inventory UnicornService
+        AccessLogSettings:
+          DestinationArn: !GetAtt UnicornInventoryLogGroup.Arn
+          Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "integrationError":"$context.integrationErrorMessage" }'
+
+  UnicornInventoryLogGroup:
+    Type: AWS::Logs::LogGroup
+
+  UnicornHomePageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: home.lambdaHandler
+      Runtime: nodejs14.x
+      Events:
+        UnicornService:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref UnicornService
+            Path: /home
+            Method: get
+
+  
