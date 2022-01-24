@@ -8,7 +8,28 @@ Globals:
   Function:
     Timeout: 3
 
+Parameters:
+  Client:
+    Description: Client website for authentication redirects and cors (must start with https://)
+    Type: String
+    Default: https://unicornrentalapp.com
+  TestWithPostman:
+    Description: Do you need to test with Postman? (Not recommended for production)
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+
 Resources:
+  AuthStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./auth.yaml
+      Parameters:
+        ClientDomain: !Ref Client
+        Postman: !Ref TestWithPostman
+
   UnicornService:
       Type: AWS::Serverless::HttpApi
       Properties:
@@ -16,6 +37,19 @@ Resources:
         AccessLogSettings:
           DestinationArn: !GetAtt UnicornInventoryLogGroup.Arn
           Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "integrationError":"$context.integrationErrorMessage" }'
+        Auth:
+          DefaultAuthorizer: OAuth2Authorizer
+          Authorizers:
+            OAuth2Authorizer:
+              AuthorizationScopes:
+                - email
+              IdentitySource: "$request.header.Authorization"
+              JwtConfiguration:
+                issuer: !GetAtt AuthStack.Outputs.Issuer
+                audience:
+                  - !GetAtt AuthStack.Outputs.UserPoolClientId
+          
+            
 
   UnicornInventoryLogGroup:
     Type: AWS::Logs::LogGroup
@@ -33,6 +67,9 @@ Resources:
             ApiId: !Ref UnicornService
             Path: /home
             Method: get
+            Auth:
+              Authorizer: NONE
+
 
   UnicornInventoryPageFunction:
     Type: AWS::Serverless::Function
@@ -47,6 +84,8 @@ Resources:
             ApiId: !Ref UnicornService
             Path: /inventory
             Method: get
+            Auth:
+              Authorizer: NONE
 
   UnicornPricePageFunction:
     Type: AWS::Serverless::Function
@@ -61,4 +100,9 @@ Resources:
             ApiId: !Ref UnicornService
             Path: /price
             Method: get
+            Auth:
+              Authorizer: OAuth2Authorizer
+              
+
+              
 

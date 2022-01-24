@@ -6,7 +6,31 @@ Description: 'unicorn-inventory-app
 Globals:
   Function:
     Timeout: 3
+Parameters:
+  Client:
+    Description: Client website for authentication redirects and cors (must start
+      with https://)
+    Type: String
+    Default: https://unicornrentalapp.com
+  TestWithPostman:
+    Description: Do you need to test with Postman? (Not recommended for production)
+    Type: String
+    Default: 'false'
+    AllowedValues:
+    - 'true'
+    - 'false'
 Resources:
+  AuthStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: AuthStack/template.yaml
+      Parameters:
+        ClientDomain:
+          Ref: Client
+        Postman:
+          Ref: TestWithPostman
+    Metadata:
+      SamResourceId: AuthStack
   UnicornService:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -20,6 +44,22 @@ Resources:
           "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey",
           "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength",
           "integrationError":"$context.integrationErrorMessage" }'
+      Auth:
+        DefaultAuthorizer: OAuth2Authorizer
+        Authorizers:
+          OAuth2Authorizer:
+            AuthorizationScopes:
+            - email
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer:
+                Fn::GetAtt:
+                - AuthStack
+                - Outputs.Issuer
+              audience:
+              - Fn::GetAtt:
+                - AuthStack
+                - Outputs.UserPoolClientId
   UnicornInventoryLogGroup:
     Type: AWS::Logs::LogGroup
   UnicornHomePageFunction:
@@ -36,6 +76,8 @@ Resources:
               Ref: UnicornService
             Path: /home
             Method: get
+            Auth:
+              Authorizer: NONE
     Metadata:
       SamResourceId: UnicornHomePageFunction
   UnicornInventoryPageFunction:
@@ -52,6 +94,8 @@ Resources:
               Ref: UnicornService
             Path: /inventory
             Method: get
+            Auth:
+              Authorizer: NONE
     Metadata:
       SamResourceId: UnicornInventoryPageFunction
   UnicornPricePageFunction:
@@ -68,5 +112,7 @@ Resources:
               Ref: UnicornService
             Path: /price
             Method: get
+            Auth:
+              Authorizer: OAuth2Authorizer
     Metadata:
       SamResourceId: UnicornPricePageFunction
