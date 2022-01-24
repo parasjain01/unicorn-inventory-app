@@ -23,7 +23,7 @@ Resources:
   UnicornHomePageFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/
+      CodeUri: src/home
       Handler: home.lambdaHandler
       Runtime: nodejs14.x
       Events:
@@ -37,7 +37,7 @@ Resources:
   UnicornInventoryPageFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/
+      CodeUri: src/inventory
       Handler: inventory.lambdaHandler
       Runtime: nodejs14.x
       Events:
@@ -46,5 +46,19 @@ Resources:
           Properties:
             ApiId: !Ref UnicornService
             Path: /inventory
+            Method: get
+
+  UnicornPricePageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/price
+      Handler: price.lambdaHandler
+      Runtime: nodejs14.x
+      Events:
+        UnicornService:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref UnicornService
+            Path: /price
             Method: get
 

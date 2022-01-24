@@ -54,3 +54,19 @@ Resources:
             Method: get
     Metadata:
       SamResourceId: UnicornInventoryPageFunction
+  UnicornPricePageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: UnicornPricePageFunction
+      Handler: price.lambdaHandler
+      Runtime: nodejs14.x
+      Events:
+        UnicornService:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: UnicornService
+            Path: /price
+            Method: get
+    Metadata:
+      SamResourceId: UnicornPricePageFunction

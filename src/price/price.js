@@ -14,16 +14,12 @@ let response;
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  * 
  */
-exports.lambdaHandler = async (event, context) => {
+ exports.lambdaHandler = async (event) => {
+    // TODO implement
     const response = {
         statusCode: 200,
-        body: JSON.stringify('Welcome to the new home' 
-        // + event.requestContext.authorizer.lambda.firstName 
-        // + ' ' 
-        // + event.requestContext.authorizer.lambda.lastName 
-        + '. This is the inventory Page'),
-        //body: JSON.stringify(event),
-
+        body: JSON.stringify('This is the Unicorn Prices Page!'),
     };
     return response;
 };
+
