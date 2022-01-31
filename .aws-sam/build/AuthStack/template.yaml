@@ -49,11 +49,7 @@ Resources:
         - Ref: AWS::NoValue
       AllowedOAuthFlowsUserPoolClient: true
       AllowedOAuthFlows:
-      - code
-      - Fn::If:
-        - UsePostman
-        - implicit
-        - Ref: AWS::NoValue
+      - implicit
       AllowedOAuthScopes:
       - email
       - openid

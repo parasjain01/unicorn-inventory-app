@@ -32,12 +32,14 @@ Resources:
       Schema: 
         - AttributeDataType: String 
           Name: email 
-          Required: false
+          Required: true
+      UserPoolName: unicorn-user-pool
 
   # Create an application for authentication
-  UserPoolClient:
+  UnicornAppClient:
     Type: AWS::Cognito::UserPoolClient 
-    Properties: 
+    Properties:
+      ClientName: unicornappclient 
       UserPoolId: !Ref UserPool
       GenerateSecret: false
       SupportedIdentityProviders:
@@ -50,7 +52,8 @@ Resources:
         - !If [UsePostman, https://oauth.pstmn.io/v1/callback, !Ref AWS::NoValue]
       AllowedOAuthFlowsUserPoolClient: true
       AllowedOAuthFlows:
-        - implicit # Implicit is only used for testing with postman and should not be in production.
+        - code
+        - !If [UsePostman, implicit, !Ref AWS::NoValue] # Implicit is only used for testing with postman and should not be in production.
       AllowedOAuthScopes:
         - email
         - openid
@@ -60,7 +63,7 @@ Resources:
   UserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
     Properties: 
-      Domain: !Sub myauth${AWS::AccountId}
+      Domain: !Sub unicornuserpool
       UserPoolId: !Ref UserPool
     
 Outputs:
